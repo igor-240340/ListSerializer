@@ -1,4 +1,4 @@
-#include <cstdlib>
+ï»¿#include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <string>
@@ -40,7 +40,7 @@ void MakeRandomLinksBetweenNodes(List& list) {
     int listLen = list.Length();
 
     for (int i = 0; i < listLen; i++) {
-        // Èíäåêñ ïðåâûøàþùèé ðàçìåð ñïèñêà ñîîòâåòñòâóåò nullptr.
+        // Ð˜Ð½Ð´ÐµÐºÑ Ð¿Ñ€ÐµÐ²Ñ‹ÑˆÐ°ÑŽÑ‰Ð¸Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€ ÑÐ¿Ð¸ÑÐºÐ° ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÑ‚Ð²ÑƒÐµÑ‚ nullptr.
         int randIndex = std::rand() % (listLen + 1);
         list[i]->rand = randIndex >= listLen ? nullptr : list[randIndex];
     }
