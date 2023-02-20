@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
 #include <map>
-#include <stdio.h>
-#include <list>
 
 struct ListNode {
     ListNode* prev = nullptr;
@@ -21,15 +18,18 @@ public:
     void Serialize(FILE* file);
     void Deserialize(FILE* file);
 
-    int Count() const { return this->count; }
+    int Length() const { return count; }
 
     ListNode* operator[] (int index);
 
+    ~List();
+    void Clear();
+
 private:
+    int count = 0;
+
     ListNode* head = nullptr;
     ListNode* tail = nullptr;
 
-    std::map<int, ListNode*> indexNodePair;
-
-    int count = 0;
+    std::map<int, ListNode*> indexToNode;
 };

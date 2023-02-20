@@ -1,77 +1,84 @@
+#include <iostream>
 #include <string>
 
 #include "List.h"
 
-ListNode* List::Add(const ListNode& node) {
-    std::cout << "List::Insert" << std::endl;
+List::~List() {
+    Clear();
+}
 
+void List::Clear() {
+    if (count == 0)
+        return;
+
+    indexToNode.clear();
+
+    tail = nullptr;
+
+    // Удаляем объекты начиная с головы и до последнего элемента.
+    ListNode* cur;
+    while (head != nullptr) {
+        cur = head;
+        head = head->next;
+        delete cur;
+    };
+
+    count = 0;
+}
+
+ListNode* List::Add(const ListNode& node) {
     ListNode* newItem = new ListNode;
     newItem->data = node.data;
-    newItem->rand = node.rand;
 
-    if (count == 0) {
-        head = newItem;
-        tail = newItem;
-    }
+    if (count == 0)
+        head = tail = newItem;
     else {
         tail->next = newItem;
         newItem->prev = tail;
         tail = newItem;
     }
 
-    indexNodePair.insert(std::pair<int, ListNode*>(count, newItem));
-
+    indexToNode.insert(std::pair<int, ListNode*>(count, newItem));
     count++;
 
     return newItem;
 }
 
+// O(2N)
 void List::Serialize(FILE* file) {
-    std::cout << "List::Serialize" << std::endl;
-
+    // В файле поле rand будет представлено индексом в списке.
     std::map<ListNode*, int> nodeToIndex;
+    for (auto const& i : indexToNode)
+        nodeToIndex.insert(std::pair<ListNode*, int>(i.second, i.first));
 
     ListNode* cur = head;
-    int i = 0;
-    while (cur != nullptr) {
-        std::cout << cur->data << std::endl;
-
-        nodeToIndex.insert(std::pair<ListNode*, int>(cur, i++));
-        cur = cur->next;
-    };
-
-    cur = head;
     while (cur != nullptr) {
         int randIndex = cur->rand == nullptr ? -1 : nodeToIndex[cur->rand];
-        fwrite(&randIndex, sizeof(randIndex), 1, file);
-        fwrite(cur->data.c_str(), cur->data.length() + 1, 1, file);
+        fwrite(&randIndex, sizeof(randIndex), 1, file); // Пишем в файл число в 4 байтах.
+        fwrite(cur->data.c_str(), cur->data.length() + 1, 1, file); // Пишем следом строку вместе с \0.
 
         cur = cur->next;
     };
 }
 
+// Сейчас предполагается, что эта функция будет вызвана только для нового (то есть, для совершенно пустого) списка.
+// Читает файл последовательно.
 void List::Deserialize(FILE* file) {
-    std::cout << "List::Deserialize" << std::endl;
-
+    int randIndex;
     char c;
     std::string s;
     ListNode n;
-    int randIndex;
-    int i = 0;
     std::map<ListNode*, int> nodeToRandIndex;
-    std::map<int, ListNode*> indexToNode;
+    
+    // Считываем индекс для rand.
     while (fread(&randIndex, sizeof(randIndex), 1, file) == 1) {
+        // Затем посимвольно читаем поле data пока не дойдём до \0.
+        s = "";
         while (fread(&c, sizeof(c), 1, file) == 1) {
             if (c == '\0') {
-                std::cout << "node.data: " << s;
-                std::cout << "node.rand: " << randIndex;
-
                 n.data = s;
-                ListNode* r = Add(n);
-                nodeToRandIndex.insert(std::pair<ListNode*, int>(r, randIndex));
-                indexToNode.insert(std::pair<int, ListNode*>(i, r));
-                s = "";
-                i++;
+                ListNode* newNode = Add(n);
+                nodeToRandIndex.insert(std::pair<ListNode*, int>(newNode, randIndex));
 
                 break;
             }
@@ -80,6 +87,7 @@ void List::Deserialize(FILE* file) {
         }
     }
 
+    // Восстанавливаем связи между узлами по полю rand.
     ListNode* cur = head;
     while (cur != nullptr) {
         int randIndex = nodeToRandIndex[cur];
@@ -89,5 +97,5 @@ void List::Deserialize(FILE* file) {
 }
 
 ListNode* List::operator[](int index) {
-    return indexNodePair[index];
+    return indexToNode[index];
 }

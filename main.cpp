@@ -5,63 +5,81 @@
 
 #include "List.h"
 
-ListNode* GetRandomNodeOrNull(List& list) {
-    int i = std::rand() % (list.Count() + 1);
-    return i >= list.Count() ? nullptr : list[i];
+static const std::string FILE_NAME = "list.bin";
+
+static void FillList(List& list, int count);
+static void MakeRandomLinksBetweenNodes(List& list);
+static void SerializeToFile(List& list, std::string fileName = FILE_NAME);
+static void DeserializeFromFile(List& list, std::string fileName = FILE_NAME);
+static void PrintList(List& list, std::string headerText);
+
+void main()
+{
+    List listOut;
+    FillList(listOut, 10);
+    MakeRandomLinksBetweenNodes(listOut);
+    SerializeToFile(listOut);
+    PrintList(listOut, "Source list");
+
+    List listIn;
+    DeserializeFromFile(listIn);
+    PrintList(listIn, "Restored list");
 }
 
-int main()
-{
-    std::srand(std::time(nullptr));
-
-    List list;
-
+void FillList(List& list, int count) {
     ListNode n;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < count; i++) {
         n.data = "node " + std::to_string(i);
-
-        if (list.Count() != 0)
-            n.rand = GetRandomNodeOrNull(list);
-
         list.Add(n);
     }
+}
 
+void MakeRandomLinksBetweenNodes(List& list) {
+    std::srand(std::time(nullptr));
+
+    int listLen = list.Length();
+
+    for (int i = 0; i < listLen; i++) {
+        // »ндекс превышающий размер списка соответствует nullptr.
+        int randIndex = std::rand() % (listLen + 1);
+        list[i]->rand = randIndex >= listLen ? nullptr : list[randIndex];
+    }
+}
+
+void SerializeToFile(List& list, std::string fileName) {
     FILE* file;
-    /*if (fopen_s(&file, "list.bin", "wb") != 0) {
-        std::cout << "Can't open file list.bin." << std::endl;
-        exit(1);
-    }*/
-
-    /*for (int i = 0; i < list.Count(); i++) {
-        std::cout << list[i]->data << " points to " << (list[i]->rand != nullptr ? list[i]->rand->data : "nullptr") << std::endl;
-    }*/
-
-    //list.Serialize(file);
-
-    //fclose(file);
-
-    if (fopen_s(&file, "list.bin", "rb") != 0) {
-        std::cout << "Can't open file list.bin." << std::endl;
+    if (fopen_s(&file, fileName.c_str(), "wb") != 0) {
+        std::cout << "Can't open file " << fileName.c_str() << std::endl;
         exit(1);
     }
 
-    List listDes;
-    listDes.Deserialize(file);
+    list.Serialize(file);
 
-    for (int i = 0; i < listDes.Count(); i++) {
-        std::cout << listDes[i]->data << " points to " << (listDes[i]->rand != nullptr ? listDes[i]->rand->data : "nullptr") << std::endl;
+    fclose(file);
+}
+
+void DeserializeFromFile(List& list, std::string fileName) {
+    FILE* file;
+    if (fopen_s(&file, fileName.c_str(), "rb") != 0) {
+        std::cout << "Can't open file " << fileName.c_str() << std::endl;
+        exit(1);
     }
 
-    //std::cout << "";
+    list.Deserialize(file);
 
-    //std::string writeString = "Hello world!";
-    //fwrite(writeString.c_str(), writeString.size() + 1, 1, file);
+    fclose(file);
+}
 
+void PrintList(List& list, std::string headerText) {
+    std::cout << headerText << std::endl;
 
-    //std::string readString;
-    //fread(&readString, sizeof(readString), 1, file);
+    for (int i = 0; i < list.Length(); i++) {
+        ListNode* node = list[i];
+        std::string nodeName = node->data;
+        std::string randName = node->rand == nullptr ? "nullptr" : node->rand->data;
 
-    //fclose(file);
+        std::cout << nodeName << " points to " << randName << std::endl;
+    }
 
-    //std::cout << "readString " << readString << std::endl
+    std::cout << std::endl;
 }
