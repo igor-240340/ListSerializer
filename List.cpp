@@ -44,9 +44,9 @@ ListNode* List::Add(const ListNode& node) {
     return newItem;
 }
 
-// O(2N)
+// O(N)
 void List::Serialize(FILE* file) {
-    // В файле поле rand будет представлено индексом в списке.
+    // В файле элемент rand будет представлен своим индексом в списке.
     std::map<ListNode*, int> nodeToIndex;
     for (auto const& i : indexToNode)
         nodeToIndex.insert(std::pair<ListNode*, int>(i.second, i.first));
@@ -61,8 +61,9 @@ void List::Serialize(FILE* file) {
     };
 }
 
-// Сейчас предполагается, что эта функция будет вызвана только для нового (то есть, для совершенно пустого) списка.
-// Читает файл последовательно.
+// O(N)
+// Сейчас предполагается, что эта функция будет вызвана только для нового (то есть для совершенно пустого) списка.
+// Читает файл последовательно и один раз.
 void List::Deserialize(FILE* file) {
     int randIndex;
     char c;

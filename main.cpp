@@ -40,7 +40,7 @@ void MakeRandomLinksBetweenNodes(List& list) {
     int listLen = list.Length();
 
     for (int i = 0; i < listLen; i++) {
-        // Индекс превышающий размер списка соответствует nullptr.
+        // Индекс, выходящий за пределы списка, обозначает nullptr.
         int randIndex = std::rand() % (listLen + 1);
         list[i]->rand = randIndex >= listLen ? nullptr : list[randIndex];
     }
